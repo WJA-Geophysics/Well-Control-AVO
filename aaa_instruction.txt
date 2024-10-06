@@ -1,0 +1,11 @@
+!!! This program is written and run on Matlab R2024a.
+
+aaa_main.m： This is the main procedure. Run this file to display the original image from the article.
+vp.mat/ps.mat/den.mat:  These are model data.
+The rest of the files are subfunctions called in the main program.
+
+# Well-Control-AVO
+** This program is written and run on Matlab R2024a. **
+* aaa_main.m： This is the main procedure. Run this file to display the original image from the article. *
+* vp.mat/ps.mat/den.mat:  These are model data. *
+* The rest of the files are subfunctions called in the main program. *
