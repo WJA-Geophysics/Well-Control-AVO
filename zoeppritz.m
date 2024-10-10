@@ -1,3 +1,138 @@
+% coef=zoeppritz(rho1,a1,b1,rho2,a2,b2,incwav,irfwav,ipol,anginc)
+%
+% This function computes the particle displacement reflection and
+% transmission coefficients (the relative displacement amplitudes)
+% for a solid-solid interface, a liquid-solid interface,
+% a solid-liquid interface, and a liquid-liquid interface.
+% The medium on each side of a given interface is perfectly elastic.
+% The output is the value of a single reflection or transmission
+% coefficient, specified by the user (see input parameters).
+% This function was translated from FORTRAN originally written by
+% Ed Krebes (Date: October 6, 1991).
+% Translated by G.F. Margrave July 1995
+%
+% NOTE: THis function is vectorized over incidence angle. That is, the last
+% input argument, anginc, may be a vector of angles with the result that the output
+% argument is a corresponding vector of coefficients.
+% rho1   = Density in the medium of incidence/reflection.
+% a1     = P wave speed in the medium of incidence/reflection.
+% b1     = S wave speed in the medium of incidence/re3flection. 
+% rho2   = Density in the medium of transmission.
+% a2     = P wave speed in the medium of transmission.
+% b2   = S wave speed in the medium of transmission.
+%
+% incwav = incwav = 1 for an incident P wave from above.
+%          incwav = 2 for an incident S wave from above.
+%          incwav = 3 for an incident P wave from below.
+%          incwav = 4 for an incident S wave from below.
+%
+% irfwav = irfwav = 1 for a reflected/transmitted P wave in upper medium.
+%          irfwav = 2 for a reflected/transmitted S wave in upper medium.
+%          irfwav = 3 for a transmitted/reflected P wave in lower medium.
+%          irfwav = 4 for a transmitted/reflected S wave in lower medium.
+%
+% ipol   = If ipol = 1, the reflection or transmission
+%          coefficient "coef" (see below) is returned as output
+%          in polar form, i.e., the real part of "coef" is the
+%          amplitude (i.e., magnitude) of the complex coefficient
+%          and the imaginary part of "coef" is the phase angle
+%          of the coefficient in radians. If ipol .ne. 1, then
+%          the coefficient is returned in rectangular form, i.e.,
+%          the real and imaginary parts of "coef" are the real
+%          and imaginary parts of the coefficient.
+% NOTE   : If ipol = 1, the phase is computed with the Fortran 
+%	   built-in function "atan2", which ensures that the 
+%	   correct branch of the arctangent function is used, i.e., 
+%	   that the correct phase angle between -180 and +180 deg
+%          is computed. The Fortran function "atan" can give erroneous 
+%	   phase angles since it only computes values on the principal 
+%	   branch of the arctangent function, i.e., only values
+%          between -90 and +90 deg.
+%
+% anginc = Vector of angles of incidence, in degrees.
+%
+% coef   = Vector of values of the reflection or transmission
+%          coefficients corresponding to the input values of
+%          incwav and irfwav. coef has one entry per element of anginc.
+%          coef is a complex number, i.e., it has a magnitude and phase angle 
+%          (see comments below).
+%
+% == If a1,a2,b1 and b2 are non-zero, a Solid-Solid interface is treated
+% == If a1=a2=0, then the SH wave case is treated 
+% == If b1=b2=0, then the Liquid-Liquid interface is considered 
+% == If b1=0 only, the Liquid-Solid interface is treated 
+%
+% NOTE: This SOFTWARE may be used by any individual or corporation for any purpose
+% with the exception of re-selling or re-distributing the SOFTWARE.
+% By using this software, you are agreeing to the terms detailed in this software's
+% Matlab source file.
+%
+% BEGIN TERMS OF USE LICENSE
+%
+% This SOFTWARE is maintained by the CREWES Project at the Department
+% of Geology and Geophysics of the University of Calgary, Calgary,
+% Alberta, Canada.  The copyright and ownership is jointly held by
+% its 'AUTHOR' (identified above) and the CREWES Project.  The CREWES
+% project may be contacted via email at:  crewesinfo@crewes.org
+%
+% The term 'SOFTWARE' refers to the Matlab source code, translations to
+% any other computer language, or object code
+%
+% Terms of use of this SOFTWARE
+%
+% 1) This SOFTWARE may be used by any individual or corporation for any purpose
+%    with the exception of re-selling or re-distributing the SOFTWARE.
+%
+% 2) The AUTHOR and CREWES must be acknowledged in any resulting publications or
+%    presentations
+%
+% 3) This SOFTWARE is provided "as is" with no warranty of any kind
+%    either expressed or implied. CREWES makes no warranties or representation
+%    as to its accuracy, completeness, or fitness for any purpose. CREWES
+%    is under no obligation to provide support of any kind for this SOFTWARE.
+%
+% 4) CREWES periodically adds, changes, improves or updates this SOFTWARE without
+%    notice. New versions will be made available at www.crewes.org .
+%
+% 5) Use this SOFTWARE at your own risk.
+%
+% END TERMS OF USE LICENSE
+%
+% == If b2=0 only, the Solid-Liquid interface is treated 
+% Comments :
+% The formulas for the coefficients in the solid-solid case have been
+% taken from Aki and Richards (1980), vol. 1, eq (5.39), (5.32). The
+% formulas for the other three cases involving liquid layers have been
+% derived by solving the corresponding equations for the boundary
+% conditions (which can be obtained by appropriately reducing the
+% Zoeppritz equations (5.33) in Aki and Richards).
+%
+% If the angle of incidence is greater than the critical angle for a
+% given reflected or transmitted wave, then the cosine of the angle of
+% the wave becomes purely imaginary. The sign of the cosine (positive
+% or negative imaginary) is chosen postive (for positive frequencies),
+% in accordance with the physicist's Fourier sign convention (used by
+% Aki and Richards --- see eq. 5.46). The Fortran built-in function
+% "sqrt" automatically outputs the principal value of the complex
+% square root, which happens to be the positive imaginary value.
+% Imaginary cosines mean that the reflection and transmission
+% coefficients can be complex numbers (see "coef" above).
+%                        =========
+%
+%
+%  See comments in subroutine "rte".
+%
+%  Input to ed should be a file of the form:
+%       rho1, a1, b1, rho2, a2, b2
+%       incwav, irfwav, ipol, anginc
+%                  -----
+%       incwav, irfwav, ipol, anginc
+%         -1  , irfwav, ipol, anginc
+%
+%  If ipol = 1, and phase of coef is wanted in degrees, then
+%  imag(coef) must be multiplied by 180/pi.
+%
+%
 function coef=zoeppritz(rho1,a1,b1,rho2,a2,b2,incwav,irfwav,ipol,anginc)		
 rpd = pi/180.0;
 %
